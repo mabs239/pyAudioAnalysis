@@ -141,7 +141,8 @@ def main(argv):
 				raise Exception("ModelType has to be either svm or knn!")
 			if not os.path.isfile(modelName):
 				raise Exception("Input modelName not found!")
-			recordAnalyzeAudio(duration, outputWavFile, 2.0, modelName, modelType)
+			#recordAnalyzeAudio(duration, outputWavFile, 2.0, modelName, modelType)
+			recordAnalyzeAudio(duration, outputWavFile, 0.3, modelName, modelType)
 		else:
 			print "Error.\nSyntax: " + argv[0] + " -recordAndClassifySegments <duration> <outputWafFile> <modelName> <modelType>"
 	

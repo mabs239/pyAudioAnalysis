@@ -211,12 +211,15 @@ def segmentationEvaluation(dirName, modelName, methodName):
     aS.evaluateSegmentationClassificationDir(dirName, modelName, methodName)
 
 
-def silenceRemovalWrapper(inputFile, smoothingWindow, weight):
+def silenceRemovalWrapper(inputFile, stWin, stStep, smoothingWindow, weight):
+    #silenceRemovalWrapper(args.input,args.stWin,args.stStep,args.smoothing, args.weight)
     if not os.path.isfile(inputFile):
         raise Exception("Input audio file not found!")
 
-    [Fs, x] = audioBasicIO.readAudioFile(inputFile)                                        # read audio signal
-    segmentLimits = aS.silenceRemoval(x, Fs, 0.05, 0.05, smoothingWindow, weight, True)    # get onsets
+    [Fs, x] = audioBasicIO.readAudioFile(inputFile)                                        
+# read audio signal
+    segmentLimits = aS.silenceRemoval(x, Fs, stWin, stStep, smoothingWindow, weight, True)    
+# get onsets
     for i, s in enumerate(segmentLimits):
         strOut = "{0:s}_{1:.3f}-{2:.3f}.wav".format(inputFile[0:-4], s[0], s[1])
         wavfile.write(strOut, Fs, x[int(Fs * s[0]):int(Fs * s[1])])
@@ -390,6 +393,8 @@ def parse_arguments():
     silrem.add_argument("-i", "--input", required=True, help="input audio file")
     silrem.add_argument("-s", "--smoothing", type=float, default=1.0, help="smoothing window size in seconds.")
     silrem.add_argument("-w", "--weight", type=float, default=0.5, help="weight factor in (0, 1)")
+    silrem.add_argument("-S", "--stStep", type=float, default=0.02, help="Short time step in (0, 1)")
+    silrem.add_argument("-W", "--stWin", type=float, default=0.02, help="Short time window in (0, 1)")
 
     spkrDir = tasks.add_parser("speakerDiarization")
     spkrDir.add_argument("-i", "--input", required=True, help="Input audio file")
@@ -460,7 +465,7 @@ if __name__ == "__main__":
     elif args.task == "regressionFolder":                                                     # Apply a regression model on every WAV file in a given path
         regressionFolderWrapper(args.input, args.model, args.regression)
     elif args.task == "silenceRemoval":                                                       # Detect non-silent segments in a WAV file and output to seperate WAV files
-        silenceRemovalWrapper(args.input, args.smoothing, args.weight)
+        silenceRemovalWrapper(args.input,args.stWin,args.stStep,args.smoothing, args.weight)
     elif args.task == "speakerDiarization":                                                   # Perform speaker diarization on a WAV file
         speakerDiarizationWrapper(args.input, args.num, args.flsd)
     elif args.task == "speakerDiarizationScriptEval":                                         # Evaluate speaker diarization given a folder that contains WAV files and .segment (Groundtruth files)
